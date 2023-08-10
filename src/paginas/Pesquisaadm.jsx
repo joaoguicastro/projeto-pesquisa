@@ -1,10 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './Pesquisaadm.css';
-import { Link } from 'react-router-dom';
-import Logo from '../jp-logo.png';
 
 export default function Pesquisaadm() {
   const [showRating, setShowRating] = useState(false);
+
+  const loadQuestions = useCallback(() => {
+    fetch('../acessoadm/criacao.json')
+      .then(response => response.json())
+      .then(data => {
+      })
+      .catch(error => console.error('Erro ao carregar perguntas:', error));
+  }, []);
+
+  useEffect(() => {
+    loadQuestions();
+  }, [loadQuestions]);
 
   const handleStartButtonClick = () => {
     setShowRating(true);
@@ -24,25 +34,6 @@ export default function Pesquisaadm() {
         </button>
         {showRating && (
           <div id="ratingContainer" className="hidden">
-            <div className="star-widget">
-              <input type="radio" name="rate" id="rate-5" />
-              <label htmlFor="rate-5" className="fas fa-star"></label>
-              <input type="radio" name="rate" id="rate-4" />
-              <label htmlFor="rate-4" className="fas fa-star"></label>
-              <input type="radio" name="rate" id="rate-3" />
-              <label htmlFor="rate-3" className="fas fa-star"></label>
-              <input type="radio" name="rate" id="rate-2" />
-              <label htmlFor="rate-2" className="fas fa-star"></label>
-              <input type="radio" name="rate" id="rate-1" />
-              <label htmlFor="rate-1" className="fas fa-star"></label>
-              <form action="#">
-                <header></header>
-                <div className="textarea">
-                  <textarea cols="30" placeholder="Fale um pouco sobre sua experiência..."></textarea>
-                </div>
-              </form>
-            </div>
-            <span id="rating-value"></span>
           </div>
         )}
       </div>

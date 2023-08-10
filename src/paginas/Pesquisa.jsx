@@ -1,13 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Pesquisa.css';
-import { Link } from 'react-router-dom';
-import Logo from '../jp-logo.png';
 
 export default function Pesquisa() {
   const [showRating, setShowRating] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [questions, setQuestions] = useState([]);
+  const [rateValue, setRateValue] = useState(0);
+  const [feedback, setFeedback] = useState('');
+
+  useEffect(() => {
+    loadQuestions();
+  }, []);
+
+  const loadQuestions = async () => {
+    try {
+      const response = await fetch('../acessoadm/criacao.json');
+      const data = await response.json();
+      setQuestions(data);
+    } catch (error) {
+      console.error('Erro ao carregar perguntas:', error);
+    }
+  };
 
   const handleStartButtonClick = () => {
     setShowRating(true);
+  };
+
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      setRateValue(0);
+      setFeedback('');
+    } else {
+      setShowRating(false);
+      // Se necessário, adicione código para finalizar a pesquisa ou redirecionar
+    }
+  };
+
+  const handleSubmitSurvey = async () => {
+    // Submissão da pesquisa utilizando o estado atual das respostas
+    const survey = {
+      name: "Usuario 1",
+      satisfaction: rateValue,
+      comments: feedback,
+      userId: 1
+    };
+
+    console.log('Submitting survey:', survey);
+
+    try {
+      const response = await fetch('http://localhost:3000/survey', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(survey)
+      });
+      const data = await response.json();
+      console.log('Sucesso:', data);
+    } catch (error) {
+      console.error('Erro:', error);
+    }
   };
 
   return (
@@ -25,28 +78,22 @@ export default function Pesquisa() {
         {showRating && (
           <div id="ratingContainer">
             <div className="star-widget">
-              <input type="radio" name="rate" id="rate-5" />
-              <label htmlFor="rate-5" className="fas fa-star"></label>
-              <input type="radio" name="rate" id="rate-4" />
-              <label htmlFor="rate-4" className="fas fa-star"></label>
-              <input type="radio" name="rate" id="rate-3" />
-              <label htmlFor="rate-3" className="fas fa-star"></label>
-              <input type="radio" name="rate" id="rate-2" />
-              <label htmlFor="rate-2" className="fas fa-star"></label>
-              <input type="radio" name="rate" id="rate-1" />
-              <label htmlFor="rate-1" className="fas fa-star"></label>
-              <form action="#" id="feedbackForm">
-                <header></header>
-                <div className="textarea">
-                  <textarea
-                    id="userFeedback"
-                    cols="30"
-                    placeholder="Fale um pouco sobre sua experiência..."
-                  ></textarea>
-                </div>
-              </form>
             </div>
-            <span id="rating-value"></span>
+            <form id="feedbackForm" onSubmit={(e) => e.preventDefault()}>
+              <header></header>
+              <div className="textarea">
+                <textarea
+                  id="userFeedback"
+                  cols="30"
+                  placeholder="Fale um pouco sobre sua experiência..."
+                  value={feedback}
+                  onChange={(e) => setFeedback(e.target.value)}
+                ></textarea>
+              </div>
+            </form>
+            <span id="rating-value">{rateValue}</span>
+            <button onClick={handleNextQuestion}>Próxima</button>
+            <button onClick={handleSubmitSurvey}>Enviar</button>
           </div>
         )}
       </div>
